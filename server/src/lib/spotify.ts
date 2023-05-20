@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 const getAccessToken = async () => {
-  const refresh_token = process.env.SPOTIFY_REFRESH_TOKEN
+  const refresh_token = process.env.SPOTIFY_REFRESH_TOKEN || ''
 
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
@@ -21,6 +21,18 @@ const getAccessToken = async () => {
   return response.json()
 }
 
+const currentPlaybackState = async () => {
+  const { access_token } = await getAccessToken()
+
+  const response = await fetch('https://api.spotify.com/v1/me/player', {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  })
+
+  return response.json()
+}
+
 const currentlyPlaying = async () => {
   const { access_token } = await getAccessToken()
 
@@ -31,4 +43,4 @@ const currentlyPlaying = async () => {
   })
 }
 
-export { currentlyPlaying }
+export { currentlyPlaying, currentPlaybackState }
