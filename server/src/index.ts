@@ -21,7 +21,15 @@ app.get('/currently-playing', async (req, res) => {
   await currentlyPlaying()
     .then((response) => response.json())
     .then((data) => {
-      res.json(data)
+      const filteredData = {
+        album: data.item.album.name,
+        artist: data.item.artists[0].name,
+        song: data.item.name,
+        timestamp: data.timestamp,
+        progress: data.progress_ms,
+      }
+
+      res.json(filteredData)
     })
     .catch((error) => {
       console.log(error)
