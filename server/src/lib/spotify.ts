@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
 
-const getAccessToken = async () => {
+async function getAccessToken() {
   const refresh_token = process.env.SPOTIFY_REFRESH_TOKEN || ''
 
   const response = await fetch('https://accounts.spotify.com/api/token', {
@@ -21,7 +21,7 @@ const getAccessToken = async () => {
   return response.json()
 }
 
-const currentPlaybackState = async () => {
+export async function currentPlaybackState() {
   const { access_token } = await getAccessToken()
 
   const response = await fetch('https://api.spotify.com/v1/me/player', {
@@ -33,14 +33,67 @@ const currentPlaybackState = async () => {
   return response.json()
 }
 
-const currentlyPlaying = async () => {
+export async function togglePlayback() {
   const { access_token } = await getAccessToken()
 
-  return fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+  const currentPlaybackStateData = await currentPlaybackState()
+
+  if (currentPlaybackStateData.is_playing) {
+    return fetch('https://api.spotify.com/v1/me/player/pause', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    })
+  } else {
+    return fetch('https://api.spotify.com/v1/me/player/play', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    })
+  }
+}
+
+export async function skipToNext() {
+  const { access_token } = await getAccessToken()
+
+  const response = await fetch('https://api.spotify.com/v1/me/player/next', {
+    method: 'POST',
+
     headers: {
       Authorization: `Bearer ${access_token}`,
     },
   })
+
+  return response.json()
 }
 
-export { currentlyPlaying, currentPlaybackState }
+export async function skipToPrevious() {
+  const { access_token } = await getAccessToken()
+
+  const response = await fetch(
+    'https://api.spotify.com/v1/me/player/previous',
+    {
+      method: 'POST',
+
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    }
+  )
+
+  return response.json()
+}
+
+export async function getQueue() {
+  const { access_token } = await getAccessToken()
+
+  const response = await fetch('https://api.spotify.com/v1/me/player/queue', {
+    headers: {
+      Authorization: `Bearer ${access_token}`,
+    },
+  })
+
+  return response.json()
+}
