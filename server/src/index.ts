@@ -14,16 +14,6 @@ import {
 } from './lib/spotify.js'
 import { millisecondsToMinutes } from './lib/utils.js'
 
-app.get('/is-playing', async (req, res) => {
-  try {
-    const currentPlaybackStateData = await currentPlaybackState()
-
-    res.json(currentPlaybackStateData.is_playing)
-  } catch {
-    res.json(false)
-  }
-})
-
 app.get('/current-playback-state', async (req, res) => {
   try {
     const data = await currentPlaybackState()
@@ -77,18 +67,6 @@ app.get('/skip-to-previous', async (req, res) => {
   } catch {
     res.json(false)
   }
-})
-
-app.get('/get-lyrics', async (req, res) => {
-  const currentPlaybackStateData = await currentPlaybackState()
-
-  const trackId = currentPlaybackStateData.item.id
-
-  const url = `https://spotify-lyric-api.herokuapp.com/?trackid=${trackId}`
-
-  const response = await fetch(url).then((response) => response.json())
-
-  res.json(response)
 })
 
 app.listen(port, () => {
