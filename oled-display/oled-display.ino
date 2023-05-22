@@ -20,11 +20,9 @@ unsigned long previousDisplayMillis = 0;
 
 const char *album = "";
 const char *artist = "";
-const char *song = "";
+const char *song = "this is a test song name before it gets updated";
 long long timestamp = 0;
 long progress = 0;
-
-int x, minX;
 
 void setup()
 {
@@ -47,8 +45,6 @@ void setup()
       ; // Don't proceed, loop forever
   }
 
-  x = display.width();
-
   // Clear the buffer.
   display.clearDisplay();
   display.setTextWrap(false);
@@ -57,87 +53,10 @@ void setup()
   display.setTextSize(1);
   display.setTextColor(WHITE);
   display.setCursor(0, 28);
-  display.println("Hello world!");
+  display.println("Connecting...");
   display.display();
   delay(2000);
   display.clearDisplay();
-
-  /*
-  // Display Inverted Text
-  display.setTextColor(BLACK, WHITE); // 'inverted' text
-  display.setCursor(0, 28);
-  display.println("TESTING Hello world!");
-  display.display();
-  delay(2000);
-  display.clearDisplay();
-
-  // Changing Font Size
-  display.setTextColor(WHITE);
-  display.setCursor(0, 24);
-  display.setTextSize(2);
-  display.println("Hello!");
-  display.display();
-  delay(2000);
-  display.clearDisplay();
-
-  // Display Numbers
-  display.setTextSize(1);
-  display.setCursor(0, 28);
-  display.println(123456789);
-  display.display();
-  delay(2000);
-  display.clearDisplay();
-
-  // Specifying Base For Numbers
-  display.setCursor(0, 28);
-  display.print("0x");
-  display.print(0xFF, HEX);
-  display.print("(HEX) = ");
-  display.print(0xFF, DEC);
-  display.println("(DEC)");
-  display.display();
-  delay(2000);
-  display.clearDisplay();
-
-  // Display ASCII Characters
-  display.setCursor(0, 24);
-  display.setTextSize(2);
-  display.write(3);
-  display.display();
-  delay(2000);
-  display.clearDisplay();
-
-  // Scroll full screen
-  display.setCursor(0, 0);
-  display.setTextSize(1);
-  display.println("Full");
-  display.println("screen");
-  display.println("scrolling!");
-  display.display();
-  display.startscrollright(0x00, 0x07);
-  delay(2000);
-  display.stopscroll();
-  delay(1000);
-  display.startscrollleft(0x00, 0x07);
-  delay(2000);
-  display.stopscroll();
-  delay(1000);
-  display.startscrolldiagright(0x00, 0x07);
-  delay(2000);
-  display.startscrolldiagleft(0x00, 0x07);
-  delay(2000);
-  display.stopscroll();
-  display.clearDisplay();
-
-  // Scroll part of the screen
-  display.setCursor(0, 0);
-  display.setTextSize(1);
-  display.println("Scroll");
-  display.println("some part");
-  display.println("of the screen.");
-  display.display();
-  display.startscrollright(0x00, 0x00);
-  */
 }
 
 void loop()
@@ -146,8 +65,6 @@ void loop()
 
   if (currentMillis - previousDisplayMillis >= 3000)
   {
-    Serial.println(String(currentMillis));
-
     previousDisplayMillis += 3000;
 
     // check if we're connected to the server (and the internet
@@ -166,7 +83,7 @@ void loop()
 
         if (payload == "true")
         {
-          Serial.println("Getting Currently Playing Song");
+          // Serial.println("Getting Currently Playing Song");
 
           client.begin(SERVER_IP + String("/currently-playing"));
           httpCode = client.GET();
@@ -174,7 +91,7 @@ void loop()
           if (httpCode > 0)
           {
             payload = client.getString();
-            Serial.println("\nStatus Code: " + String(httpCode));
+            // Serial.println("\nStatus Code: " + String(httpCode));
             // Serial.println(payload);
 
             StaticJsonDocument<0> filter;
@@ -197,7 +114,26 @@ void loop()
             timestamp = doc["timestamp"]; // 1684637890615
             progress = doc["progress"];   // 166610
 
-            minX = -6 * strlen(song);
+            // display the text on the screen
+            display.clearDisplay();
+            display.setTextColor(WHITE);
+
+            // display.setCursor(x, 0);
+            display.setCursor(0, 0);
+            display.setTextSize(1);
+            display.print(String(song));
+            // display.startscrollleft(0x00, 0x00);
+
+            display.setCursor(0, 10);
+            display.print(String(artist));
+
+            display.setCursor(0, 20);
+            display.print(String(album));
+
+            display.setCursor(0, 30);
+            display.print(String(miliseconds_to_minutes(progress)));
+
+            display.display();
           }
           else
           {
@@ -217,26 +153,19 @@ void loop()
       Serial.println("Not connected to WiFi");
     }
   }
+}
 
-  // display the text on the screen
-  display.clearDisplay();
-  display.setTextColor(WHITE);
+String miliseconds_to_minutes(long miliseconds)
+{
+  long seconds = miliseconds / 1000;
+  long minutes = seconds / 60;
+  seconds = seconds % 60;
 
-  display.setCursor(x, 0);
-  display.setTextSize(1);
-  display.print(String("-> " + String(song)));
-
-  display.setCursor(0, 20);
-  display.print(String(artist));
-
-  display.display();
-
-  x = x - 2;
-
-  if (x < minX)
+  String secondsString = String(seconds);
+  if (seconds < 10)
   {
-    x = display.width();
+    secondsString = "0" + secondsString;
   }
 
-  delay(50);
+  return String(minutes) + ":" + secondsString;
 }
